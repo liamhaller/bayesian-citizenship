@@ -1,0 +1,138 @@
+---
+title: "descriptiveanalysis"
+format: html
+editor: visual
+echo: false
+warning: false
+toc: true
+toc-depth: 4
+---
+
+```{r}
+source('dataloading.R')
+
+library(surveyexplorer)
+```
+
+# Descriptive Statistics
+
+## Demographics
+
+### Gender
+
+```{r}
+single_freq(oap, question = 'gender')
+
+
+```
+
+## Residence Status
+
+```{r}
+single_freq(oap, question = 'residence_status')
+
+```
+
+```{r}
+single_table(oap, question = 'residence_status')
+
+```
+
+## Citizenship
+
+*How many respondents plan to apply for citizenship*
+
+```{r}
+
+single_freq(oap, question = 'plan_to_apply')
+```
+
+*Citizenship aspirations by gender*
+
+```{r}
+surveyexplorer::single_table(oap, question = 'plan_to_apply', group_by = 'gender', subgroups_to_exclude = 'Keine Angabe / anonymisiert')
+
+```
+
+# Citizenship Applications
+
+## Not yet applied for citizenship
+
+```{r}
+surveyexplorer::multi_freq(oap, question = starts_with('whynotapply'))
+
+```
+
+```{r}
+surveyexplorer::multi_table(oap, question = starts_with('whynotapply'), na.rm = TRUE)
+```
+
+## Against applying for citizenship
+
+```{r}
+surveyexplorer::multi_freq(oap, question = starts_with('whyagainstapply'))
+
+```
+
+```{r}
+surveyexplorer::multi_table(oap, question = starts_with('whyagainstapply'), na.rm = TRUE)
+```
+
+## Already applied 
+
+```{r}
+surveyexplorer::multi_freq(oap, question = starts_with('whyapply'))
+
+```
+
+```{r}
+surveyexplorer::multi_table(oap, question = starts_with('whyapply'), na.rm = TRUE)
+```
+
+# Frequency of interactions with Bureaucracy
+
+*Please indicate how frequently you have interacted with the following authorities*
+
+```{r}
+surveyexplorer::matrix_table(oap, question = starts_with('interaction')) 
+```
+
+# Experiences with Bureaucracy
+
+*How would you rate the treatment you received when engaging with the following activities*
+
+-   The employee treated me with dignity and respect
+
+-   The employee treated me fairly 
+
+-   The process and requirements were made clear to me
+
+## Bamf
+
+```{r}
+surveyexplorer::matrix_table(oap, question = starts_with('bamf.'))
+
+```
+
+## Auslanderbehörde
+
+```{r}
+surveyexplorer::matrix_table(oap, question = starts_with('auslander.'))
+
+```
+
+## Job Center
+
+```{r}
+surveyexplorer::matrix_table(oap, question = starts_with('jobcenter.'))
+
+```
+
+# Overwhelmed
+
+*With respect to the bureaucratic encounters you selected above, to what extent do you agree with the following statement: At times I was overwhelmed or unable to manage bureaucratic tasks* 
+
+```{r}
+surveyexplorer::matrix_table(oap, question = 'overwhelmed')
+
+```

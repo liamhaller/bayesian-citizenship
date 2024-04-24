@@ -1,3 +1,13 @@
+
+#generated files for qmd render
+.png
+.js
+.css
+.min.js
+.min.css
+descriptiveanalysis_files/
+
+
 # History files
 .Rhistory
 .Rapp.history
