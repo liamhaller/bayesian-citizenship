@@ -1,6 +1,8 @@
 ---
 title: "descriptiveanalysis"
-format: html
+format: 
+  html: 
+    embed-resources: true
 editor: visual
 echo: false
 warning: false
@@ -78,7 +80,7 @@ surveyexplorer::multi_freq(oap, question = starts_with('whyagainstapply'))
 surveyexplorer::multi_table(oap, question = starts_with('whyagainstapply'), na.rm = TRUE)
 ```
 
-## Already applied 
+## Already applied
 
 ```{r}
 surveyexplorer::multi_freq(oap, question = starts_with('whyapply'))
