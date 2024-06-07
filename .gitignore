@@ -6,7 +6,11 @@
 .min.js
 .min.css
 descriptiveanalysis_files/
-.html
+*.html
+*.qmd
+*.RDS
+
+dataexploration
 
 
 # History files

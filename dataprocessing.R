@@ -175,9 +175,26 @@ oap <- oap %>%
 
 #Select only variables for M1 model + filter out for complete cases
 #Results in loss of ~26 observations (mostly from frequency question)
-nat <- oap %>% 
+nat_full <- oap %>% 
   select(b_hdi, b_frequency, b_treatment, b_residencestatus, b_requirements, b_bureaucratictrajectory, b_naturalization) %>% 
-  filter(complete.cases(.)) #~370 observations
+  filter(complete.cases(.)) %>%  #~370 observations
+  rename(I = b_hdi,
+         F = b_frequency,
+         T = b_treatment,
+         S = b_residencestatus,
+         R = b_requirements,
+         BT = b_bureaucratictrajectory,
+         N = b_naturalization)
+
+nat <- nat_full %>% 
+  select(-c(T,F,R)) %>% 
+  as.data.frame() #this is necessary in order for CausalQueries::collapse_data function to work 
+ 
+#Data set that only includes indivduals who have fufilled the requirements to naturalize
+nat_isable <- nat_full %>% 
+  filter(R==1) %>% 
+  select(-c(T,F,R)) %>% 
+  as.data.frame() #this is necessary in order for CausalQueries::collapse_data function to work 
 
 
 # Clean up ----------------------------------------------------------------
