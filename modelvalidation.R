@@ -2,6 +2,26 @@
 library(CausalQueries)
 
 
+
+
+
+# Sensitivity -------------------------------------------------------------
+
+
+##Unobserved Confounding
+
+
+
+
+
+
+#Simiulate more able / unable 
+
+
+
+
+
+
 # Bayesian P value --------------------------------------------------------
 
 # Number of simulations

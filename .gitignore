@@ -10,7 +10,7 @@ descriptiveanalysis_files/
 *.qmd
 *.RDS
 
-dataexploration
+'dataexploration'
 
 
 # History files

@@ -6,6 +6,9 @@ library(tidyverse)
 
 oap <- haven::read_dta('/Users/haller/Desktop/DeZIM/Projects/Bayesian Citizenship/dezim_panel_dw1_p_2024_03_07.dta')
 
+oap %>% select(1:60) %>% as_factor() %>% glimpse()
+
+oap %>% select(aw0soc040) %>% as_factor()
 
 # Select and rename relevant questions ------------------------------------
 
@@ -22,7 +25,7 @@ oap <- oap %>%
          dw1soc005c_l, dw1soc005c_m, dw1soc005c_wn, dw1soc005c_ka,
          dw1soc006a, dw1soc006b, dw1soc006c, dw1soc007aa, dw1soc007ab, dw1soc007ac,
          dw1soc007ba, dw1soc007bb, dw1soc007bc, dw1soc007ca, dw1soc007cb, dw1soc007cc,
-         dw1soc008) %>% 
+         dw1soc008, aw0soc040) %>% 
   #Demographics
   mutate(gender = as_factor(aw0soc001), .keep = 'unused') %>% 
   mutate(birthyear = as_factor(aw0soc003), .keep = 'unused') %>% 
@@ -33,6 +36,8 @@ oap <- oap %>%
   mutate(residencestatus0 = as_factor(aw0soc014), .keep = 'unused') %>% 
   rename(citizenship = aw0soc009) %>% 
   mutate(plantoapply = as_factor(dw1soc004), .keep = 'unused') %>% 
+  mutate(education = as_factor(aw0soc040), .keep = 'unused') %>% 
+
   
   rename(
         #Why not yet apply for citizenship

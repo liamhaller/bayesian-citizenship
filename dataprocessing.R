@@ -69,7 +69,8 @@ oap <- oap %>%
                                        residencestatus == "Anderer, und zwar:" ~ 0,
                                        TRUE ~ NA_integer_ )) #Weiß nicht + Keine Angabe
 
-
+table(oap$residencestatus)
+table(oap$b_residencestatus)
 
 # Requirements -------------------------------------------------------------
 
@@ -78,14 +79,30 @@ oap <- oap %>%
 #For those that have not applied or not yet applied they were asked the reason for not applying.
 #Those that answered a specific requirement or that they were unsure/unable were coded as not
 #having met the requirements
-oap <- oap %>% 
-  mutate(b_requirements = case_when(whynotapply.time == 1 ~ 0,
-                                    whynotapply.documents == 1 ~ 0,
-                                    whynotapply.language == 1 ~ 0,
-                                    whynotapply.uncertain == 1 ~ 0,
-                                    whyagainstapply.notable == 1 ~ 0,
-                                    TRUE ~ 1))
-
+# oap <- oap %>% 
+#   mutate(b_requirements = case_when(whynotapply.time == 1 ~ 0,
+#                                     whynotapply.documents == 1 ~ 0,
+#                                     as.numeric(whynotapply.test) == 1 ~ 0,
+#                                     whynotapply.language == 1 ~ 0,
+#                                     whynotapply.uncertain == 1 ~ 0,
+#                                     whyagainstapply.notable == 1 ~ 0,
+#                                     whyagainstapply.finance == 1 ~ 0,
+#                                     TRUE ~ 1))
+library(haven)
+oap <- oap %>%
+  mutate(across(starts_with("whynotapply"), zap_labels),
+         across(starts_with("whyagainstapply"), zap_labels)) %>%
+  mutate(b_requirements = case_when(
+    whynotapply.time == 1 ~ 0,
+    whynotapply.documents == 1 ~ 0,
+    whynotapply.test == 1 ~ 0,
+    whynotapply.language == 1 ~ 0,
+    whynotapply.uncertain == 1 ~ 0,
+    whyagainstapply.notable == 1 ~ 0,
+    whyagainstapply.finance == 1 ~ 0,
+    TRUE ~ 1
+  )) 
+table(oap$b_requirements)
 
 # Bureaucratic trajectory -------------------------------------------------
 
@@ -94,14 +111,16 @@ oap <- oap %>%
 # 1 indicates turbulent bureaucratic trajectory, 0 indicates mild bureaucratic trajectory
 oap <- oap %>% 
   mutate(b_bureaucratictrajectory = case_when(overwhelmed == 'Stimme voll und ganz zu' ~ 1,
-                                              overwhelmed == 'Stimme eher zu' ~ 1,
+                                              overwhelmed == 'Stimme eher zu' ~ 0,
                                               overwhelmed == 'Teils/teils' ~ 0,
                                               overwhelmed == 'Stimme eher nicht zu' ~ 0,
                                               overwhelmed == "Stimme überhaupt nicht zu" ~ 0,
                                               overwhelmed == -77 ~ 0, #had no interaction with bureaucracy
-                                              overwhelmed == "Weiß nicht" ~ 0,
+                                              overwhelmed == "Weiß nicht" ~ NA_integer_,
                                               TRUE ~ NA_integer_)) #keine Angabe
 
+table(oap$overwhelmed)
+table(oap$b_bureaucratictrajectory)
 
 # Frequency ---------------------------------------------------------------
 
@@ -171,12 +190,38 @@ oap <- oap %>%
                                     plantoapply == 'Nein, ich plane es nicht.' ~ 0,
                                     plantoapply == 'Weiß nicht' ~ 0,
                                     TRUE ~ NA_integer_))
+table(oap$plantoapply)
+
+
+
+
+# Education ---------------------------------------------------------------
+
+unique(oap$education)
+
+# 1 indicates turbulent bureaucratic trajectory, 0 indicates mild bureaucratic trajectory
+oap <- oap %>% 
+  mutate(b_education = case_when(education == 'Abitur bzw. erweiterte Oberschule mit Abschluss 12. Klasse (Hochschulreife)' ~ 1,
+                                              education == 'Realschulabschluss, Mittlere Reife, Fachschulreife oder Abschluss der polytechnischen Oberschule 10. Klasse' ~ 1,
+                                              education == 'Fachhochschulreife (Abschluss einer Fachoberschule etc.)' ~ 1,
+                                              education == 'Anderen Schulabschluss, und zwar:' ~ 0,
+                                              education == "Nicht bestimmbar" ~ 0,
+                                              education == "Schule beendet ohne Abschluss" ~ 0,
+                                              education == "Hauptschulabschluss, Volksschulabschluss, Abschluss der polytechnischen Oberschule 8. oder 9. Klasse" ~ 0,
+                                              education == "Keine Angabe" ~ 0,
+                                              education == "Ich gehe noch zur Schule" ~ 0,
+                                              education == 'Weiß nicht' ~ 0)) #keine Angabe
+
+
+# Print the 
+# Selected df -------------------------------------------------------------
 
 
 #Select only variables for M1 model + filter out for complete cases
 #Results in loss of ~26 observations (mostly from frequency question)
 nat_full <- oap %>% 
-  select(b_hdi, b_frequency, b_treatment, b_residencestatus, b_requirements, b_bureaucratictrajectory, b_naturalization) %>% 
+  select(b_hdi, b_frequency, b_treatment, b_residencestatus, b_requirements,
+         b_bureaucratictrajectory, b_naturalization, b_education) %>% 
   filter(complete.cases(.)) %>%  #~370 observations
   rename(I = b_hdi,
          F = b_frequency,
@@ -184,17 +229,14 @@ nat_full <- oap %>%
          S = b_residencestatus,
          R = b_requirements,
          BT = b_bureaucratictrajectory,
-         N = b_naturalization)
+         N = b_naturalization,
+         E = b_education)
 
-nat <- nat_full %>% 
-  select(-c(T,F,R)) %>% 
-  as.data.frame() #this is necessary in order for CausalQueries::collapse_data function to work 
- 
-#Data set that only includes indivduals who have fufilled the requirements to naturalize
-nat_isable <- nat_full %>% 
-  filter(R==1) %>% 
-  select(-c(T,F,R)) %>% 
-  as.data.frame() #this is necessary in order for CausalQueries::collapse_data function to work 
+
+nat <- nat_full %>% select(-c(T,F)) %>% 
+  rename(O = I, A = R) %>% 
+  as.data.frame()
+
 
 
 # Clean up ----------------------------------------------------------------

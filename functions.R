@@ -9,6 +9,7 @@ library(tidybayes)
 
 
 plot_halfeye <- function(model, variable, outcome = "N") {
+  require(tidybayes)
   query1 <- paste(outcome, "[", variable, "=1]", sep = "")
   query0 <- paste(outcome, "[", variable, "=0]", sep = "")
   
@@ -40,11 +41,6 @@ plot_halfeye <- function(model, variable, outcome = "N") {
 
 # Arbitray queries --------------------------------------------------------
 
-
-library(CausalQueries)
-library(bayesplot)
-library(tidyverse)
-library(tidybayes)
 
 evaluate_query <- function(model, outcome, query_vars, given_vars = NULL, print_query = FALSE) {
   # Construct the query strings
@@ -146,6 +142,8 @@ evaluate_query <- function(model, outcome, query_vars, given_vars = NULL, print_
 }
 
 plot_query <- function(model, query, given_vars = NULL, print_query = FALSE) {
+  require(CausalQueries)
+  require(ggplot2)
   # Initialize an empty data frame to store the combined results
   combined_df <- data.frame(Value = numeric(), Distribution = character(), Given = character(), stringsAsFactors = FALSE)
   
