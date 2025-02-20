@@ -157,7 +157,7 @@ oap <- oap %>%
                                  bamf.fair == "Stimme eher nicht zu" ~ 0,
                                  bamf.clear == "Stimme überhaupt nicht zu" ~ 0,
                                  bamf.clear == "Stimme eher nicht zu" ~ 0,
-                                 
+      
                                  auslander.respect == "Stimme überhaupt nicht zu" ~ 0,
                                  auslander.respect == "Stimme eher nicht zu" ~ 0,
                                  auslander.fair == "Stimme überhaupt nicht zu" ~ 0,
@@ -197,13 +197,12 @@ table(oap$plantoapply)
 
 # Education ---------------------------------------------------------------
 
-unique(oap$education)
 
 # 1 indicates turbulent bureaucratic trajectory, 0 indicates mild bureaucratic trajectory
 oap <- oap %>% 
   mutate(b_education = case_when(education == 'Abitur bzw. erweiterte Oberschule mit Abschluss 12. Klasse (Hochschulreife)' ~ 1,
-                                              education == 'Realschulabschluss, Mittlere Reife, Fachschulreife oder Abschluss der polytechnischen Oberschule 10. Klasse' ~ 1,
-                                              education == 'Fachhochschulreife (Abschluss einer Fachoberschule etc.)' ~ 1,
+                                              education == 'Realschulabschluss, Mittlere Reife, Fachschulreife oder Abschluss der polytechnischen Oberschule 10. Klasse' ~ 0,
+                                              education == 'Fachhochschulreife (Abschluss einer Fachoberschule etc.)' ~ 0,
                                               education == 'Anderen Schulabschluss, und zwar:' ~ 0,
                                               education == "Nicht bestimmbar" ~ 0,
                                               education == "Schule beendet ohne Abschluss" ~ 0,
@@ -211,6 +210,30 @@ oap <- oap %>%
                                               education == "Keine Angabe" ~ 0,
                                               education == "Ich gehe noch zur Schule" ~ 0,
                                               education == 'Weiß nicht' ~ 0)) #keine Angabe
+
+
+
+
+# Language ----------------------------------------------------------------
+
+
+oap <- oap %>% 
+  mutate(b_language = case_when(german_skills == 'Sehr gut' ~ 1,
+                                 german_skills == 'Gut' ~ 0,
+                                TRUE ~ 0)) #Gut, Mittelmäßig, Schlect, Sehr schlect, Gar nicht
+
+
+
+# Economic class ----------------------------------------------------------
+
+
+oap <- oap %>% 
+  mutate(b_economicclass = case_when(shortfall_400 == 'Nein, könnte ich nicht' ~ 0,
+                                     shortfall_400 == 'Ja, könnte ich kurzfristig bezahlen' ~ 1,
+                                     shortfall_400 == "Keine Angabe" ~ 0,
+                                     shortfall_400 == "Nicht bestimmbar" ~ 0,
+                                TRUE ~ NA_integer_)) 
+
 
 
 # Print the 
@@ -221,20 +244,22 @@ oap <- oap %>%
 #Results in loss of ~26 observations (mostly from frequency question)
 nat_full <- oap %>% 
   select(b_hdi, b_frequency, b_treatment, b_residencestatus, b_requirements,
-         b_bureaucratictrajectory, b_naturalization, b_education) %>% 
-  filter(complete.cases(.)) %>%  #~370 observations
-  rename(I = b_hdi,
+         b_bureaucratictrajectory, b_naturalization, b_education, b_language, b_economicclass, age) %>% 
+  rename(O = b_hdi,
          F = b_frequency,
          T = b_treatment,
          S = b_residencestatus,
-         R = b_requirements,
+         A = b_requirements,
          BT = b_bureaucratictrajectory,
          N = b_naturalization,
-         E = b_education)
+         E = b_education,
+         C = b_economicclass,
+         L = b_language,
+         Y = age)
 
 
-nat <- nat_full %>% select(-c(T,F)) %>% 
-  rename(O = I, A = R) %>% 
+nat <- nat_full %>% select(-c(T,F, E, L, C, Y)) %>% 
+  filter(complete.cases(.)) %>%  #~370 observations
   as.data.frame()
 
 

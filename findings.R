@@ -184,3 +184,30 @@ library(patchwork)
 
 
 
+# Corr Betwen nat_full ----------------------------------------------------
+
+
+  # Load the necessary packages
+  
+  # Assuming your data frame is named 'nat_test'
+  # Calculate the correlation matrix
+  cor_nat_full <- cor(nat_full %>% filter(complete.cases(.)) )
+
+
+  
+
+# Create a correlation plot
+col<- colorRampPalette(c("red", "grey", "blue"))(20)
+corrplot(cor_nat_full,
+         method = "number",
+         type = "upper", 
+         order = "hclust", 
+         col = col,  
+         tl.col="black",
+         tl.srt = 0  # Rotate the labels 45 degrees
+)
+
+
+
+
+

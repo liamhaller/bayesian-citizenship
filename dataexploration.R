@@ -1,6 +1,15 @@
 # 
 
+#age
+prop.table(table(oap$gender))
 
+x <- oap %>% select(birthyear) %>% 
+  mutate(birthyear = na_if(birthyear , "Keine Angabe")) %>% 
+  mutate(birthyear = as.numeric(birthyear)) %>% 
+  mutate(age = 2024 -birthyear) 
+
+
+as.character(oap$birthyear)
 
 # Alternitive Structures --------------------------------------------------
 

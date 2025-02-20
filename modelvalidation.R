@@ -1,16 +1,36 @@
 #model validation
 library(CausalQueries)
+library(pscl) 
+library(gtsummary)
+library(broom)
+library(tidyverse)
+library(rethinking)
 
-
-
+confound.m3_status <- readRDS("m3_c.RDS")
+confound.m3_ability <- readRDS("m3_ca.RDS")
+m3 <- readRDS("m3.RDS")
 
 
 # Sensitivity -------------------------------------------------------------
 
 
 ##Unobserved Confounding
+lm(data = oap, formula = as.factor(overwhelmed)~as.factor(b_frequency)+
+     as.factor(b_treatment)+
+     as.factor(education)+
+     as.factor(german_skills)) %>% summary()
 
 
+lm(data = oap, formula = BT~T+F+E+L) %>% summary()
+
+
+  tbl_regression(
+    pvalue_fun = ~ style_pvalue(.x, digits = 2),
+  ) %>%
+  add_global_p() %>%
+  bold_p(t = 0.10) %>%
+  bold_labels() %>%
+  italicize_levels() 
 
 
 
@@ -32,12 +52,10 @@ simulated_mean_BT <- numeric(num_simulations)
 simulated_cov_S_I <- numeric(num_simulations)
 simulated_cov_S_BT <- numeric(num_simulations)
 
-
-
 # Function to calculate test statistics
 calculate_test_statistics <- function(data) {
   mean_BT <- mean(data$BT)
-  cov_S_I <- cov(data$S, data$I)
+  cov_S_I <- cov(data$S, data$O)
   cov_S_BT <- cov(data$S, data$BT)
   return(c(mean_BT, cov_S_I, cov_S_BT))
 }
@@ -46,8 +64,8 @@ calculate_test_statistics(nat)
 
 # Draw a parameter vector and simulate data repeatedly
 for (i in 1:num_simulations) {
-  param_vector <- m1 %>% CausalQueries:::get_parameters(param_type = 'posterior_draw')
-  simulated_data <- simulate_data(model = m1, parameters = param_vector, n = nrow(nat))
+  param_vector <- m3 %>% CausalQueries:::get_parameters(param_type = 'posterior_draw') #!! model here
+  simulated_data <- simulate_data(model = m3, parameters = param_vector, n = nrow(nat)) #!! model here
   stats <- calculate_test_statistics(simulated_data)
   simulated_mean_BT[i] <- stats[1]
   simulated_cov_S_I[i] <- stats[2]
@@ -110,4 +128,58 @@ plot_cov_S_BT <- ggplot(data_cov_S_BT, aes(x = value)) +
 # Arrange plots in a single row
 gridExtra::grid.arrange(plot_mean_BT, plot_cov_S_I, plot_cov_S_BT, ncol = 3)
 
+
+
+
+# What affects BT? --------------------------------------------------------
+
+
+# Fit logistic regression model of Bureaucratic Trajectory
+model <- glm(BT ~ O + F + T + S + E + L + C + Y, data = nat_full, family = binomial)
+
+summary(model)
+
+model %>% 
+  tbl_regression(exponentiate = FALSE) %>% 
+  as_flex_table()
+
+# Calculate pseudo-R^2 measures
+pseudo_r2 <- pscl::pR2(model)
+
+# Display the results
+pseudo_r2
+
+
+
+# Markov Convergence ------------------------------------------------------
+
+
+#some parameter draws to use for demonstration
+x <- bayesplot::example_mcmc_draws(chains = 4, params = 6)
+dim(x)
+#> [1] 250   4   6
+dimnames(x)
+#> $Iteration
+#> NULL
+#> 
+#> $Chain
+#> [1] "chain:1" "chain:2" "chain:3" "chain:4"
+#> 
+#> $Parameter
+#> [1] "alpha"   "sigma"   "beta[1]" "beta[2]" "beta[3]" "beta[4]"
+#> 
+
+# trace plots of the betas
+color_scheme_set("viridis")
+bayesplot::mcmc_trace(x, regex_pars = "beta")
+
+
+
+
+grab(m3, object = 'stan_summary') %>% rethinking::trankplot()
+
+grab(m3, object = 'stan_fit')
+
+stan <- grab(m3, object = 'stan_objects') 
+stan$stanfit %>% rethinking::trankplot()
 

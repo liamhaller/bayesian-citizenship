@@ -6,9 +6,8 @@ library(tidyverse)
 
 oap <- haven::read_dta('/Users/haller/Desktop/DeZIM/Projects/Bayesian Citizenship/dezim_panel_dw1_p_2024_03_07.dta')
 
-oap %>% select(1:60) %>% as_factor() %>% glimpse()
-
-oap %>% select(aw0soc040) %>% as_factor()
+#oap %>% select(1:60) %>% as_factor() %>% glimpse()
+oap %>% select(aw0pol012a) %>% as_factor() %>% table()
 
 # Select and rename relevant questions ------------------------------------
 
@@ -25,11 +24,17 @@ oap <- oap %>%
          dw1soc005c_l, dw1soc005c_m, dw1soc005c_wn, dw1soc005c_ka,
          dw1soc006a, dw1soc006b, dw1soc006c, dw1soc007aa, dw1soc007ab, dw1soc007ac,
          dw1soc007ba, dw1soc007bb, dw1soc007bc, dw1soc007ca, dw1soc007cb, dw1soc007cc,
-         dw1soc008, aw0soc040) %>% 
+         dw1soc008, aw0soc040, aw0soc023, aw0soc057a, aw0soc057b, aw0soc057c) %>% 
   #Demographics
   mutate(gender = as_factor(aw0soc001), .keep = 'unused') %>% 
-  mutate(birthyear = as_factor(aw0soc003), .keep = 'unused') %>% 
-  mutate(birthinde = as_factor(aw0soc004), .keep = 'unused') %>% 
+  mutate(age = if_else(
+    # Check if birthyear is numeric
+    grepl("^[0-9]+$", aw0soc003), # regular expression to check if birthyear is numeric
+    # Calculate age if numeric
+    2024 - as.numeric(aw0soc003),
+    # Assign NA_integer_ if not numeric
+    NA_integer_
+  ))  %>%  mutate(birthinde = as_factor(aw0soc004), .keep = 'unused') %>% 
   mutate(birthcountry = as_factor(aw0soc005_o), .keep = 'unused') %>% 
   mutate(migrationyear = as_factor(aw0soc007), .keep = 'unused') %>% 
   mutate(residencestatus = as_factor(cw2v_430), .keep = 'unused') %>% 
@@ -37,6 +42,11 @@ oap <- oap %>%
   rename(citizenship = aw0soc009) %>% 
   mutate(plantoapply = as_factor(dw1soc004), .keep = 'unused') %>% 
   mutate(education = as_factor(aw0soc040), .keep = 'unused') %>% 
+  mutate(german_skills = as_factor(aw0soc023), .keep = 'unused') %>% 
+  mutate(shortfall_400 = as_factor(aw0soc057a), .keep = 'unused') %>% 
+  mutate(shortfall_800 = as_factor(aw0soc057b), .keep = 'unused') %>% 
+  mutate(shortfall_8000 = as_factor(aw0soc057c), .keep = 'unused') %>% 
+  
 
   
   rename(
@@ -74,7 +84,8 @@ oap <- oap %>%
          whyapply.feelgerman = dw1soc005c_l,
          whyapply.moveoutEU = dw1soc005c_m,
          whyapply.dontknow = dw1soc005c_wn,
-         whyapply.noresponse = dw1soc005c_ka) %>% 
+         whyapply.noresponse = dw1soc005c_ka
+        ) %>% 
          
         #Frequency of encounters
         mutate(interaction.bamf = as_factor(dw1soc006a), .keep = 'unused') %>% 
